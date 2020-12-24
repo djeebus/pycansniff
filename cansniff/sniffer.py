@@ -1,20 +1,32 @@
 import click
+import enum
 import threading
 import time
 import traceback
 
-from cansniff.cli import ScanMode
 from cansniff.elm327 import Elm327
 from cansniff.repo import PacketRepo
 from cansniff.scanner import Scanner, BufferFullError
 from cansniff.table import generate_table
 
 
+class ScanMode(enum.Enum):
+    BLACKLIST = False
+    RECORD = True
+
+
 class Sniffer:
     def __init__(self, elm: Elm327):
         self.elm = elm
+        self._records = 0
 
         self.mode = ScanMode.BLACKLIST
+
+        self._all_packets = PacketRepo()
+        self._bad_packets = PacketRepo()
+        self._good_packets = PacketRepo()
+
+        self._done = threading.Event()
 
         self._input_thread = threading.Thread(
             target=self._input,
@@ -22,12 +34,6 @@ class Sniffer:
         )
         self._monitor_thread = MonitorThread(self)
         self._reporting_thread = ReportingThread(self)
-
-        self._all_packets = PacketRepo()
-        self._bad_packets = PacketRepo()
-        self._good_packets = PacketRepo()
-
-        self._done = threading.Event()
 
     @property
     def is_running(self):
@@ -50,6 +56,9 @@ class Sniffer:
                 mode = ScanMode(not self.mode.value)
                 print(f'switching to {mode.name} mode')
                 self.mode = mode
+
+                if mode == ScanMode.RECORD:
+                    self._records += 1
             except KeyboardInterrupt:
                 break
 
@@ -98,10 +107,14 @@ class ReportingThread(threading.Thread):
         )
 
         headers = 'packet', 'total'
-        rows = [(key, val) for key, val in sorted_totals]
+        rows = [
+            (key, val)
+            for key, val in sorted_totals
+            if val == self.sniffer._records
+        ]
         table = generate_table(headers, rows)
 
-        click.echo(f'possible good packets ({len(rows)} total packets)')
+        click.echo(f'possible good packets ({len(rows)} total packets, count=={self.sniffer._records})')
         click.echo(table)
 
 

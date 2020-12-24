@@ -17,7 +17,6 @@ class Elm327:
         self.echo_input = True
 
         self.s = serial.Serial(*args, **kwargs)
-        self._config()
 
     def read_until(self, expected):
         while True:
@@ -27,7 +26,7 @@ class Elm327:
             if p == b'?':
                 raise Exception('invalid command')
 
-    def _config(self):
+    def reset(self):
         self.write(b'ATZ')   # reset
         self.read_until(b'>')
 
@@ -61,6 +60,7 @@ class Elm327:
 
         while True:
             response = self.read()
+            print(f'response: {response}')
             if not response:
                 continue
 
