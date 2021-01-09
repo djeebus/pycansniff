@@ -24,9 +24,14 @@ class Elm327:
             if p == expected:
                 break
             if p == b'?':
-                raise Exception('invalid command')
+                raise InvalidCommandError('', p)
 
     def reset(self):
+        # self.write(b'')
+        # try:
+        #     self.read_until(b'>')
+        # except InvalidCommandError:
+        #     pass
         self.write(b'ATZ')   # reset
         self.read_until(b'>')
 
@@ -60,7 +65,6 @@ class Elm327:
 
         while True:
             response = self.read()
-            print(f'response: {response}')
             if not response:
                 continue
 

@@ -1,7 +1,9 @@
 import click
+import collections
+import time
 
 from cansniff.elm327 import Elm327
-from cansniff.scanner import Scanner
+from cansniff.protocols import GMLAN, CAN
 from cansniff.sniffer import Sniffer
 
 is_alive = True
@@ -13,47 +15,42 @@ is_alive = True
 @click.option('-w', '--whitelist', multiple=True)
 @click.option('--reset', is_flag=True)
 @click.option('--monitor', is_flag=True)
-def cli(serial, blacklist, whitelist, reset, monitor):
+@click.option('--gmlan', is_flag=True)
+def cli(serial, reset, monitor, gmlan, **kwargs):
     elm = Elm327(serial, baudrate='115200')
     if reset:
         elm.reset()
 
-    for _ in range(1):
-        try:
-            elm.send_command(b'')
-        except:
-            pass
-    elm.send_command(b'STFAC')  # clear all filters
+    # for _ in range(1):
+    #     try:
+    #         elm.send_command(b'')
+    #     except:
+    #         pass
 
-    if whitelist:
-        for prefix in whitelist:
-            elm.send_command(
-                f'STFFCA {prefix}, FFF'.encode('ascii'),
-            )
-            elm.send_command(
-                f'STFPA {prefix}, FFF'.encode('ascii'),
-            )
-
-        elm.send_command(
-            f'STFBA 7E8, 7F8'.encode('ascii'),
-        )
-    elif blacklist:
-        for prefix in blacklist:
-            elm.send_command(
-                f'STFBA {prefix}, FFF'.encode('ascii'),
-            )
+    if gmlan:
+        protocol_cls = GMLAN
     else:
-        elm.send_command(b'STFPA 000, 000')  # add a global pass filter
+        protocol_cls = CAN
 
-    if monitor:
-        scanner = Scanner(elm)
-        for p in scanner.scan():
-            print(p)
-    else:
+    protocol = protocol_cls(elm=elm, **kwargs)
+    protocol.setup()
+
+    click.echo('monitoring ...')
+
+    try:
+        start = time.time()
         elm.echo_input = False
-
-        sniffer = Sniffer(elm)
-        sniffer.run()
+        if monitor:
+            packets = collections.defaultdict(int)
+            for p in protocol.monitor():
+                packets[tuple(p.split(b' ')[:2])] += 1
+                print(f'{str(round(time.time() - start, 3)).zfill(8)}: {p}')
+        else:
+            sniffer = Sniffer(elm)
+            sniffer.run()
+    except KeyboardInterrupt:
+        for item, count in packets.items():
+            print(f'{item}\tx{count}')
 
 
 if __name__ == '__main__':

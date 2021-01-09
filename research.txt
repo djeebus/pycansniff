@@ -1,0 +1,124 @@
+https://www.scantool.net/scantool/downloads/98/stn11xx21xx_frpm_d.pdf
+
+ATE1    = echo all input
+ATL1	= lines end in 0x0D,0x0A
+ATH1	= turn display of headers on (check byte, can pci byte)
+ATS1	= turn on print spaces
+ATAL	= allow long (>7 byte) messages
+ATCAF1  = turn on automatic formatting
+ATMA	= monitor all (deprecatd)
+
+
+
+ATDP	= display current obd protocol
+> ISO 15765-4 (CAN 11/500)
+STPR	= report current protocol number
+> 6 [AT]
+STPRS	= report current protocol string
+> ISO 15765-4 (CAN 11/500) [AT]
+>STDI
+OBDLink MX BT r2.2
+>STI
+STN1151 v4.5.0
+>STIX
+STN1151 v4.5.0 [2019.04.12]
+>STSN
+115110335915
+>STPBRR
+500000
+>STCTRR
+8103B7
+
+
+
+Single Wire CAN  (aka GMLAN)
+p Protocol
+61 ISO 11898, 11-bit Tx, 33.3kbps, var DLC
+62 ISO 11898, 29-bit Tx, 33.3kbps, var DLC
+63 ISO 15765, 11-bit Tx, 33.3kbps, DLC=8
+64 ISO 15765, 29-bit Tx, 33.3kbps, DLC=8
+
+STP 61 === set GMLAN protocol
+
+
+
+ATZ 	= reset device
+
+selectively filtering for each CAN ID (ATCM 7FF then ATCF nnn where goes from 001 to 7FF, each followed by ATMA)
+
+ATCF <pattern>	= set can hardware filter pattern (id)
+  >ATCF 7E0
+  OK
+  >ATCF 18 DB 00 00
+  OK
+ATCM <mask>	= set can hardware filter mask (mask)
+  >ATCM FF0
+  OK
+  >ATCM FF FE 00 00
+  OK
+ATCRA <pattern>	= set can hardware filter (id, sets mask to all 1s)
+  >ATCRA 7E9
+  OK
+  >ATCRA 18 DA F1 10
+  OK
+  >ATCRA 7EX   << "X" means "starts with 7E"
+  OK
+
+
+
+
+STM 	= monitor OBD bus using current filters
+STMA 	= monitor all messages on OBD bus
+STFFCA <pattern>, <mask>  = add flow control filter, same format as STFPA
+STFBA <pattern>, <mask>   = add block filter, same format as STFPA
+STFAC 	= clear all filters
+
+STFPA [pattern], [mask]
+Add a pass filter. Takes two parameters: pattern
+and mask. Pattern and mask can be any length from 0
+to 5 bytes (0 to 10 ASCII characters), but both have to
+be the same length. The messages are matched MSB
+first, up to the filter length. Messages shorter than the
+filter length, will not match that filter.
+If an odd number of ASCII characters is specified, a
+leading 0 will be added to the first byte. In other words,
+STFPA 7E8,7FF
+...is the same as
+STFPA 07E8,07FF
+For 29-bit CAN, the first four bytes are CAN ID; for
+11-bit CAN, the first two bytes are CAN ID.
+The first 3 bits for 29-bit CAN or the first 5 bits for
+11-bit CAN should be don't care (0s in mask) and/or 0s
+in pattern.
+>ATCF 7E0
+OK
+>ATCF 18 DB 00 00
+OK
+
+
+filter order:
+ATCF/ATCM => STFFCA => STFBA => display
+
+
+
+
+
+
+
+STPX p1, p2, p2 == "Send arbitrary message"
+
+
+might be useful:
+ATRA hh         Set the receive address to hh
+ATSH header     Set request message header
+ATSR hh         Set the receive address to hh
+ATTA hh         Set tester address to hh
+ATRTR           Send an RTR message
+
+
+ATCAF 0      Turn off auto check sum, packet type
+ATV 1        Turn off message padding
+ATAL         Turn on > 7 byte messages (necessary for the on/off message)
+STCSWM 3     Turn on Single Wire CAN transceiver mode = Normal
+
+can probably just send the raw message, no STPX

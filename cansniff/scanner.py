@@ -14,7 +14,6 @@ class Scanner:
             self.elm327.write(b'STM')
 
             while True:
-                print('reading ...')
                 packet = self.elm327.read()
                 if packet == Elm327.BUFFER_FULL:
                     self.elm327.read_until(b'>')

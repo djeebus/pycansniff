@@ -1,0 +1,110 @@
+STPCB 1   "turn automatic check byte calculation and checking on"
+
+// this might only be three bytes, not four
+STPX h:10724066, d:04, r:0
+STPX h:10722040, d:09003C00, r:0
+STPX h:10724066, d:04, r:0
+
+
+
+
+10 72 40 66 / 20 == passenger seat cooler button down
+10 72 40 66 / 08 == passenger seat cooler button down
+10 72 40 66 / 04 == driver seat cooler button down
+10 72 40 66 / 01 == driver seat heater button down
+10 72 40 66 / 00 == driver/passenger seat heater/cooler button up
+
+
+1st byte == 09 for driver cooler, 0C for driver warmer, 00 == off
+2nd byte == 09 for passenger cooler, 0C for passenger warmer 00 == off
+3rd byte == 3=3C, 2=2C, 1=24, 0=00
+4th byte == 3=3C, 2=2C, 1=24, 0=00
+
+
+10 72 20 40 / 09 00 3C 00 == driver seat cooler = 3
+10 72 20 40 / 09 00 2C 00 == driver seat cooler = 2
+10 72 20 40 / 09 00 24 00 == driver seat cooler = 1
+10 72 20 40 / 00 00 00 00 == driver seat off
+10 72 20 40 / 0C 00 3C 00 == driver seat warmer = 3
+10 72 20 40 / 0C 00 2C 00 == driver seat warmer = 2
+10 72 20 40 / 0C 00 24 00 == driver seat warmer = 1
+10 72 20 40 / 00 00 00 00 == driver sear warmer off
+10 72 20 40 / 00 09 00 3C == passenger seat cooler = 3
+10 72 20 40 / 00 09 00 2C == passenger seat cooler = 2
+10 72 20 40 / 00 09 00 24 == passenger seat cooler = 1
+10 72 20 40 / 00 0C 00 3C == passenger seat warmer = 3
+10 72 20 40 / 00 0C 00 2C == passenger seat warmer = 2
+10 72 20 40 / 00 0C 00 24 == passenger seat warmer = 1
+10 72 20 40 / 00 00 00 00 == passenger seat off
+
+
+
+10 72 20 40 00 09 00 2C
+# driver seat cooler = 3
+0002.653: b'10 72 40 66 04 '
+0002.698: b'10 72 20 40 09 00 3C 00 '
+000002.8: b'10 72 40 66 00 '
+# driver seat cooler = 2
+0005.904: b'10 72 40 66 04 '
+0005.933: b'10 72 20 40 09 00 2C 00 '
+0006.079: b'10 72 40 66 00 '
+# driver seat cooler = 1
+0007.886: b'10 72 40 66 04 '
+0007.938: b'10 72 20 40 09 00 24 00 '
+0008.083: b'10 72 40 66 00 '
+# driver seat cooloer = off
+00010.27: b'10 72 40 66 04 '
+0010.363: b'10 72 20 40 00 00 00 00 '
+0010.466: b'10 72 40 66 00 '
+# driver seat warmer = 3
+0013.801: b'10 72 40 66 01 '
+0013.903: b'10 72 20 40 0C 00 3C 00 '
+0013.952: b'10 72 40 66 00 '
+# driver seat warmer = 2
+0015.223: b'10 72 40 66 01 '
+0015.238: b'10 72 20 40 0C 00 2C 00 '
+0015.396: b'10 72 40 66 00 '
+# driver seat warmer = 1
+0016.728: b'10 72 40 66 01 '
+0016.871: b'10 72 40 66 00 '
+0016.923: b'10 72 20 40 0C 00 24 00 '
+# driver seat warmer = off
+0018.146: b'10 72 40 66 01 '
+0018.188: b'10 72 20 40 00 00 00 00 '
+0018.269: b'10 72 40 66 00 '
+
+
+
+
+# passenger seat cooler = 3
+0087.693: b'10 72 40 66 20 '
+0087.758: b'10 72 20 40 00 09 00 3C '
+0087.805: b'10 72 40 66 00 '
+# passenger seat cooler = 2
+0089.118: b'10 72 40 66 20 '
+0089.133: b'10 72 20 40 00 09 00 2C '
+0089.282: b'10 72 40 66 00 '
+# passenger seat cooler = 1
+0090.578: b'10 72 40 66 20 '
+0090.646: b'10 72 20 40 00 09 00 24 '
+0090.719: b'10 72 40 66 00 '
+# passenger seat cooler = off
+0092.232: b'10 72 40 66 20 '
+0092.346: b'10 72 20 40 00 00 00 00 '
+0092.366: b'10 72 40 66 00 '
+# passenger seat warmer = 3
+0094.261: b'10 72 40 66 08 '
+0094.338: b'10 72 20 40 00 0C 00 3C '
+0094.411: b'10 72 40 66 00 '
+# passenger seat warmer = 2
+0095.446: b'10 72 40 66 08 '
+0095.497: b'10 72 20 40 00 0C 00 2C '
+0095.537: b'10 72 40 66 00 '
+# passenger seat warmer = 1
+0096.687: b'10 72 40 66 08 '
+0096.751: b'10 72 20 40 00 0C 00 24 '
+0096.778: b'10 72 40 66 00 '
+# passenger seat warmer = off
+00098.14: b'10 72 40 66 08 '
+0098.204: b'10 72 20 40 00 00 00 00 '
+0098.252: b'10 72 40 66 00 '
